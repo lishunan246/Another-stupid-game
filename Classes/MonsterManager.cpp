@@ -46,7 +46,7 @@ void MonsterManager::update(float dt)
 			}
 			else if (monster->isCollidewithPlayer(m_player))
 			{
-				m_player->hit();
+				//m_player->hit();
 				monster->hide();
 			}
 		}

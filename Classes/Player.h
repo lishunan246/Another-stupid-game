@@ -14,16 +14,19 @@ public:
 	~Player();
 	CREATE_FUNC(Player);
 	virtual bool init();
-	void jump();
-	void hit();
-	int getiHP();
-
+	void run();
+	void setViewPointByPlayer();
+	void setTiledMap(TMXTiledMap* map);
+	void setTagPosition(int x, int y);
+	
 private:
-	bool m_isJumping;
-	int m_iHP;
+	TMXTiledMap* m_map;
+	bool isJumping;
+	TMXLayer* meta;
 
-	void resetData();
+	Point tileCoordForPosition(Point pos);
 };
+
 
 
 #endif

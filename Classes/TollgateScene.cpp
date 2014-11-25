@@ -14,41 +14,16 @@ bool TollgateScene::init()
 	if (!Layer::init())
 		return false;
 
-	Size visibleSize = Director::getInstance()->getVisibleSize();
-	Sprite* titleSprite = Sprite::create("title.png");
-	titleSprite->setPosition(visibleSize.width / 2, visibleSize.height - 50);
-	this->addChild(titleSprite,2);
+	TMXTiledMap* map = TMXTiledMap::create("level01.tmx");
 
-	m_player = Player::create();
-	m_player->bindSprite(Sprite::create("sprite.png"));
-	m_player->setPosition(200, visibleSize.height / 4);
-	this->addChild(m_player, 3);
+	this->addChild(map);
 
-	initBG();
-	loadUI();
-
-	this->scheduleUpdate();
-
-	MonsterManager* monsterMgr = MonsterManager::create();
-	this->addChild(monsterMgr);
-	monsterMgr->bindPlayer(m_player);
+	addPlayer(map);
 
 	return true;
 }
 
-void TollgateScene::initBG()
-{
-	Size visibleSize = Director::getInstance()->getVisibleSize();
 
-	m_bgSprite1 = Sprite::create("tollgateBG.jpg");
-	m_bgSprite1 -> setPosition(visibleSize.width / 2, visibleSize.height / 2);
-	this->addChild(m_bgSprite1, 0);
-
-	m_bgSprite2 = Sprite::create("tollgateBG.jpg");
-	m_bgSprite2->setPosition(visibleSize.width / 2+visibleSize.width, visibleSize.height / 2);
-	m_bgSprite2->setFlippedX(true);
-	this->addChild(m_bgSprite2, 0);
-}
 
 Scene* TollgateScene::createScene()
 {
@@ -66,52 +41,33 @@ Scene* TollgateScene::createScene()
 	return scene;
 }
 
-void TollgateScene::update(float delta)
+
+void TollgateScene::addPlayer(TMXTiledMap* map)
 {
-	int posX1 = m_bgSprite1->getPositionX();
-	int posX2 = m_bgSprite2->getPositionX();
+	Size visibleSize = Director::getInstance()->getVisibleSize();
 
-	int iSpeed = 1;
+	Sprite* playerSprite = Sprite::create("player.png");
+	Player* mPlayer = Player::create();
+	mPlayer->bindSprite(playerSprite);
+	mPlayer->run();
+	mPlayer->setTiledMap(map);
 
-	posX1 -= iSpeed;
-	posX2 -= iSpeed;
+	TMXObjectGroup* objGroup = map->getObjectGroup("objects");
 
-	m_bgSprite1->setPositionX(posX1);
-	m_bgSprite2->setPositionX(posX2);
+	ValueMap playerPointMap = objGroup->getObject("PlayerPoint");
+	float playerX = playerPointMap.at("x").asFloat();
+	float playerY = playerPointMap.at("y").asFloat();
 
-	m_iScore++;
+	mPlayer->setPosition(playerX,playerY);
+	map->addChild(mPlayer);
+	ThreeDirectionController* threeDirectionController = ThreeDirectionController::create();
 
-	m_scoreLab->setStringValue(Value(m_iScore).asString());
-	m_hpBar->setPercent(m_player->getiHP() / 10.f);
+	SimpleMoveController* simpleMoveController = SimpleMoveController::create();
 
-	if (m_player->getiHP() == 0)
-	{
-		Director::getInstance()->pushScene(
-			TransitionSlideInT::create(3.0f, SecondScene::createScene())
-			);
-	}
-}
+	threeDirectionController->setiXSpeed(1);
+	threeDirectionController->SetiYSpeed(0);
 
-void TollgateScene::loadUI()
-{
-	auto UI = cocostudio::GUIReader::getInstance()->widgetFromJsonFile("LittleRunnerUI_1.ExportJson");
-	this->addChild(UI);
+	this->addChild(threeDirectionController);
 
-	auto jumpBtn = (Button*)Helper::seekWidgetByName(UI, "JumpBtn");
-	m_scoreLab = (TextAtlas*)Helper::seekWidgetByName(UI, "scoreLab");
-	m_hpBar = (LoadingBar*)Helper::seekWidgetByName(UI, "hpProgress");
-
-	jumpBtn->addTouchEventListener(this, toucheventselector(TollgateScene::jumpEvent));
-}
-
-void TollgateScene::jumpEvent(Ref*, TouchEventType type)
-{
-	switch (type)
-	{
-	case TouchEventType::TOUCH_EVENT_ENDED:
-		m_player->jump();
-		break;
-	default:
-		break;
-	}
+	mPlayer->setController(threeDirectionController);
 }

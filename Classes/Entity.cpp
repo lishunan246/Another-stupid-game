@@ -25,3 +25,19 @@ void Entity::bindSprite(Sprite* sprite)
 	m_sprite->setPosition(size.width / 2.0f, size.height / 2.0f);
 	this->setContentSize(size);
 }
+
+void Entity::setController(Controller* controller)
+{
+	this->m_controller = controller;
+	m_controller->setControllerListener(this);
+}
+
+void Entity::setTagPosition(int x, int y)
+{
+	setPosition(Point(x, y));
+}
+
+Point Entity::getTagPosition()
+{
+	return getPosition();
+}
